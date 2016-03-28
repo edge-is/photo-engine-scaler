@@ -19,36 +19,9 @@ slug.defaults.modes['pretty'] = {
 
 var converter = require('./lib/img-converter.js');
 
-var scaleProfile = {
-  src : '',
-  dst : '',
-  base: 'archives',
-  watermark : {
-    image : 'img/Herarn_watermark.tif',
-    size : {
-      height : '0',
-      width : '0'
-    },
-    location : {
-      top : function (s, w){
-        return (s.height - w.height) - 10;
-      },
-      left : function (s, w){
-        return ((s.width / 2) - (w.width / 2));
-      }
-    }
-  },
-  profiles : [
-    { name: 'xx-small',compress:'JPEG',  slug: true, maxsize : '225',  maxheight : '127', quality : '60%', watermark : true, strip: true, format : 'jpg' },
-    { name: 'x-small', compress:'JPEG',  slug: true, maxsize : '324',  maxheight : '182', quality : '60%', watermark : true, strip: true, format : 'jpg' },
-    { name: 'small',   compress:'JPEG',  slug: true, maxsize : '480',  maxheight : '270', quality : '60%', watermark : true, strip: true, format : 'jpg' },
-    { name: 'medium',  compress:'JPEG',  slug: true, maxsize : '720',  maxheight : '405', quality : '60%', watermark : true, strip: true, format : 'jpg' },
-    { name: 'large',    compress:'JPEG', slug: true, maxsize : '1080', maxheight : '608', quality : '70%', watermark : true, strip: true, format : 'jpg' },
-    { name: 'x-large',  compress:'JPEG', slug: true, maxsize : '1280', maxheight : '720', quality : '70%', watermark : true, strip: true, format : 'jpg' },
-    { name: 'xx-large', compress:'JPEG', slug: true, maxsize : '1600', maxheight : '900', quality : '83%', watermark : true, strip: true, format : 'jpg' },
-    { name: 'ref',      compress:'JPEG', slug: true, maxsize : '1600', maxheight : '900', quality : '83%', watermark : false, strip: false, format : 'jpg' },
-  ]
-};
+var config = require('./config.js');
+
+var scaleProfile = config.profile;
 
 
 // scan('./archives', function (err, res){
@@ -137,7 +110,6 @@ function ConvertFiles(files){
 // list = list.slice(70,75);
 // console.log(list);
   async.eachLimit(list, 1, function (item, next){
-
       scaleProfile.src = item.file;
 
       scaleProfile.dst = "output4/{{dir}}/{{profile_name}}/{{filename}}.{{profile_name}}{{ext}}";
