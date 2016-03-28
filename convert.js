@@ -114,6 +114,14 @@ function isHidden(file){
 function isImage(p){
   var file = p.file;
   var res = path.parse(file);
+
+  var hidden = isHidden(res.name);
+  var extensions = ['.jpeg','.jpg','.tif', '.tif', '.png', '.gif', '.webp'];
+
+  if (extensions.indexOf(res.ext) < 0){
+    return false;
+  }
+
   if (!isHidden(res.name)){
     return p;
   }
