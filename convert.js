@@ -103,16 +103,36 @@ function ReadLogtoJSON(logfile){
     .split('\n')
     .map(toObject).filter(bounch);
 }
+function isHidden(file){
+  var ch = file.charAt(0)
+  if (ch === '.' || ch === '..'){
+    return true;
+  }
+  return false;
+}
+
+function isImage(p){
+  var file = p.file;
+  var res = path.parse(file);
+  if (!isHidden(res.name)){
+    return p;
+  }
+  return false;
+
+}
 
 function ConvertFiles(files){
 
+
+
   var list = ReadLogtoJSON(files.log);
+
+
+  list = list.filter(isImage);
 // list = list.slice(70,75);
 // console.log(list);
   async.eachLimit(list, 1, function (item, next){
       scaleProfile.src = item.file;
-
-      scaleProfile.dst = "output4/{{dir}}/{{profile_name}}/{{filename}}.{{profile_name}}{{ext}}";
 
       converter.scaleImageByProfile(scaleProfile, function (err, res){
         if (err) return next(err);
