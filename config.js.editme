@@ -1,0 +1,25 @@
+var config = {
+  name : 'photo-engine-scaler',
+  elasticsearch : {
+    server : 'localhost:9200'
+  },
+  default_version : '1.0.0',
+  exiftool : "c:\\temp\\exiftool.exe",
+  redis : {
+    connection : {
+      host : '127.0.0.1',
+      port : 6370
+    },
+    message_queue : 'image_messages_dev'
+  },
+  objectStore : {
+    type : 's3',
+    authentication : {
+      accessKeyId: "",
+      secretAccessKey: ""
+    }
+  }
+};
+
+
+module.exports=config;

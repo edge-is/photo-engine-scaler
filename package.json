@@ -1,0 +1,33 @@
+{
+  "name": "photo-engine-scaler",
+  "version": "1.0.0",
+  "description": "Photo engine image scale worker",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edge-is/photo-engine-scaler.git"
+  },
+  "keywords": [
+    "worker"
+  ],
+  "author": "Agust Ingi Kjartansson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/edge-is/photo-engine-scaler/issues"
+  },
+  "homepage": "https://github.com/edge-is/photo-engine-scaler",
+  "dependencies": {
+    "async": "^1.5.2",
+    "elasticsearch": "^8.2.0",
+    "exifjs": "^1.1.1",
+    "filewalker": "^0.1.2",
+    "gm": "^1.20.0",
+    "mkdirp": "^0.5.1",
+    "redis": "^2.1.0",
+    "slug": "^0.9.1",
+    "tinytim": "^0.1.1"
+  }
+}
