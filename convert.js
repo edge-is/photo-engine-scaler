@@ -23,14 +23,15 @@ var config = require('./config.js');
 
 var scaleProfile = config.profile;
 
+var argv = require('yargs').argv;
 
-// scan('./archives', function (err, res){
-//   if (err) return console.log(err);
-//   ConvertFiles(res);
-// })
-//
-//
-ConvertFiles({log : 'tmp/scan-0.2.2016_3-17-12.json'})
+var logfile = argv.l;
+
+if (!logfile){
+  return console.error('No log file specified use -l /path/to/file');
+}
+
+ConvertFiles({log : logfile});
 
 
 function exists(path){
