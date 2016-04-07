@@ -27,6 +27,10 @@ var argv = require('yargs').argv;
 
 var logfile = argv.l;
 
+var now = new Date().toISOString().replace(/:/g, '_');
+
+var errorFile = ['./logs/convert-error-', now, '.log'].join('');
+
 if (!logfile){
   return console.error('No log file specified use -l /path/to/file');
 }
@@ -130,6 +134,17 @@ function isImage(p){
 
 }
 
+function writeErrorLog(item, callback){
+  var json = JSON.stringify(item) + '\n';
+
+  fs.appendFile(errorFile, json, function (err, status){
+    if (err) console.log('error writing to log', err);
+
+    callback();
+  })
+
+}
+
 function ConvertFiles(files){
 
 
@@ -144,7 +159,11 @@ function ConvertFiles(files){
       scaleProfile.src = item.path;
 
       converter.scaleImageByProfile(scaleProfile, function (err, res){
-        if (err) return next(err);
+        if (err){
+          console.log('Error converting', item.path);
+          item.error = err;
+          return writeErrorLog(item, next);
+        }
         console.log('Done', res.source_image_size, res._parsed_output_filename);
         next();
       });
