@@ -113,7 +113,7 @@ function isHidden(file){
 }
 
 function isImage(p){
-  var file = p.file;
+  var file = p.path;
   var res = path.parse(file);
 
   var hidden = isHidden(res.name);
@@ -141,7 +141,7 @@ function ConvertFiles(files){
 // list = list.slice(70,75);
 // console.log(list);
   async.eachLimit(list, 1, function (item, next){
-      scaleProfile.src = item.file;
+      scaleProfile.src = item.path;
 
       converter.scaleImageByProfile(scaleProfile, function (err, res){
         if (err) return next(err);
