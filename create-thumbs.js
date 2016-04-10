@@ -24,6 +24,8 @@ var scanDir = argv.s || false;
 
 var logfile = argv.f || false;
 
+var force = argv.force || false;
+
 var options = false;
 if (argv.c){
   options = readConfig(argv.c);
@@ -107,26 +109,65 @@ function isImage(extension){
   return false;
 }
 
-function convertImages(array){
+function filesExist(array, profiles, callback){
+  if (force){
+    return callback(null, array);
+  }
 
-  var pace = new Pace(array.length);
-  async.forEachLimit(array, 1, function (item, next){
-    var filePath = path.relative('.', item.path);
-    var parsedFile = path.parse(item.path);
-
-    if (!isImage(parsedFile.ext)){
-      // console.log('Not an image', item.path);
-      pace.op();
-      return next();
-    }
-
-    fs.readFile(item.path, function (err, buffer){
-      converter.start(item.path, buffer, options, function (err, status){
-        next();
+  var nonExisting = [];
+  var pace = new Pace(array.length * profiles.length);
+  async.forEachLimit(array, 2, function (item, next){
+    var parsed = path.parse(item.path);
+    var obj = converter._createTemplateObject(parsed.name);
+    async.forEachLimit(profiles, 2, function (profile, _next){
+      obj.filetype    = profile.filetype;
+      obj.profilename =profile.name;
+      var dst = converter._formatString(profile.dst, obj);
+      fs.stat(dst, function (err, stats){
+        if (err){
+          nonExisting.push(item);
+        }
         pace.op();
+        _next();
+      });
+
+    }, next);
+
+  }, function (){
+    callback(null, nonExisting);
+  });
+
+}
+
+function convertImages(array){
+  if (!force) console.log('Checking if thumbnails already exists', array.length * options.profiles.length);
+
+  filesExist(array, options.profiles, function (err, files){
+
+    console.log('Starting convert:', files.length);
+    var pace = new Pace(array.length);
+    async.forEachLimit(files, 1, function (item, next){
+      var filePath = path.relative('.', item.path);
+      var parsedFile = path.parse(item.path);
+
+      if (!isImage(parsedFile.ext)){
+        // console.log('Not an image', item.path);
+        pace.op();
+        return next();
+      }
+
+      fs.readFile(item.path, function (err, buffer){
+        converter.start(item.path, buffer, options, function (err, status){
+          next();
+          pace.op();
+        });
       });
     });
   });
+
+
+
+
 }
 //
 //
