@@ -1,0 +1,15 @@
+module.exports =  {
+  watermark : {
+    image : 'img/small.png',
+    gravity : 'south',
+  },
+  profiles : [
+    { name: 'xx-small',compress:'JPEG',  dst:'thumbs/{{l1}}/{{l2}}/{{filename}}.{{profilename}}.{{filetype}}', maxsize : '225',  quality : '60%', filetype : 'jpg' },
+    { name: 'x-small', compress:'JPEG',  dst:'thumbs/{{l1}}/{{l2}}/{{filename}}.{{profilename}}.{{filetype}}', maxsize : '324',  quality : '60%', filetype : 'jpg' },
+    { name: 'small',   compress:'JPEG',  dst:'thumbs/{{l1}}/{{l2}}/{{filename}}.{{profilename}}.{{filetype}}', maxsize : '480',  quality : '60%', filetype : 'jpg' },
+    { name: 'medium',  compress:'JPEG',  dst:'thumbs/{{l1}}/{{l2}}/{{filename}}.{{profilename}}.{{filetype}}', maxsize : '720',  quality : '60%', filetype : 'jpg' },
+    { name: 'large',    compress:'JPEG', dst:'thumbs/{{l1}}/{{l2}}/{{filename}}.{{profilename}}.{{filetype}}', maxsize : '1080', quality : '70%', filetype : 'jpg' },
+    { name: 'x-large',  compress:'JPEG', dst:'thumbs/{{l1}}/{{l2}}/{{filename}}.{{profilename}}.{{filetype}}', maxsize : '1280', quality : '70%', filetype : 'jpg' },
+    { name: 'xx-large', compress:'JPEG', dst:'thumbs/{{l1}}/{{l2}}/{{filename}}.{{profilename}}.{{filetype}}', maxsize : '1600', quality : '83%', filetype : 'jpg' },
+  ]
+};

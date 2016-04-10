@@ -21,14 +21,19 @@
   "homepage": "https://github.com/edge-is/photo-engine-scaler",
   "dependencies": {
     "async": "^1.5.2",
+    "colors": "^1.1.2",
     "elasticsearch": "^8.2.0",
     "exifjs": "^1.1.1",
     "filewalker": "^0.1.2",
     "gm": "^1.20.0",
     "mkdirp": "^0.5.1",
+    "moment": "^2.12.0",
+    "pace": "0.0.4",
     "redis": "^2.1.0",
+    "sharp": "^0.14.0",
     "slug": "^0.9.1",
     "tinytim": "^0.1.1",
+    "walk": "^2.3.9",
     "yargs": "^4.3.2"
   }
 }
