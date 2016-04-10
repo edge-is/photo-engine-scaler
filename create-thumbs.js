@@ -10,8 +10,6 @@ var crypto = require('crypto');
 var mkdirp = require('mkdirp');
 var argv = require('yargs').argv;
 
-var statusBar = require('./lib/status.js');
-
 var fileScan = require('./lib/scan.js');
 
 var converter = require('./lib/converter.js');
