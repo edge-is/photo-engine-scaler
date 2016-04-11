@@ -26,6 +26,25 @@ var logfile = argv.f || false;
 
 var force = argv.force || false;
 
+var sharpCache = {};
+
+sharpCache.files  = setDefaultInt(argv['cache-files']  , 10);
+sharpCache.memory = setDefaultInt(argv['cache-memory'] , 200);
+sharpCache.items  = setDefaultInt(argv['cache-items']  , 100);
+
+function setDefaultInt(value, def){
+  var int = parseInt(value);
+
+  if (isNaN(int)){
+    return def;
+  }
+  return int;
+}
+
+
+sharp.cache(sharpCache);
+
+
 var options = false;
 if (argv.c){
   options = readConfig(argv.c);
