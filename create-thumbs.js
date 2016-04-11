@@ -42,6 +42,13 @@ function setDefaultInt(value, def){
 }
 
 
+if (argv.h || argv.help){
+  return console.log([
+    'Usage program -s /dir/ || -f /logfile.log',
+    'settings for Sharp: --cache-files, --cache-memory --cache-itesm'
+  ].join('\n'));
+}
+
 sharp.cache(sharpCache);
 
 
