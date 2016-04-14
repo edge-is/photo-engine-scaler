@@ -37,6 +37,8 @@ if (!logfile){
 }
 
 
+var forceCreate = argv.force || false;
+
 
 ConvertFiles({log : logfile});
 

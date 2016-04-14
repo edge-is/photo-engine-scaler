@@ -28,6 +28,7 @@ var force = argv.force || false;
 
 var sharpCache = {};
 
+
 function log(){
   if (!argv.verbose) return;
 
@@ -195,6 +196,7 @@ function convertImages(array){
 
   if (!force) console.log('Checking if thumbnails already exists', array.length * options.profiles.length);
 
+  options.force = force;
 
   filesExist(array, options.profiles, function (err, files){
 
