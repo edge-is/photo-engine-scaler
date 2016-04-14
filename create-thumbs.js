@@ -56,6 +56,9 @@ function setDefaultInt(value, def){
   return int;
 }
 
+function md5(string){
+  return crypto.createHash('md5').update(string).digest("hex");
+}
 
 if (argv.h || argv.help){
   return console.log([
@@ -154,6 +157,42 @@ var dummypace = {
   op  : function (){}
 };
 
+function deDupeArray(array, callback){
+  var cache = {};
+
+  var files = [];
+
+  var pace = dummypace;
+
+  var len = array.length;
+  //
+  // if (!argv.verbose){
+  //    pace = new Pace(array.length);
+  // }
+
+  async.forEachLimit(array, 2, function (item, next){
+
+    var key = md5(item.path);
+
+    if (key in cache) {
+      //pace.op();
+
+      return next();
+    }
+
+    files.push(item);
+    cache[key] = true;
+
+    return next();
+
+  }, function (){
+
+    cache = false;
+    return callback(null, files);
+
+  });
+}
+
 function filesExist(array, profiles, callback){
   if (force){
     return callback(null, array);
@@ -162,9 +201,9 @@ function filesExist(array, profiles, callback){
   var nonExisting = [];
 
   var pace = dummypace;
-
+  //
   if (!argv.verbose){
-     pace = new Pace(array.length * profiles.length);
+     pace = new Pace(array.length * profiles.length );
   }
 
   async.forEachLimit(array, 2, function (item, next){
@@ -187,7 +226,12 @@ function filesExist(array, profiles, callback){
     }, next);
 
   }, function (){
-    callback(null, nonExisting);
+    deDupeArray(nonExisting, function(err, files){
+      callback(null, files);
+    });
+
+
+
   });
 
 }
@@ -204,7 +248,7 @@ function convertImages(array){
     var pace = dummypace;
 
     if (!argv.verbose){
-      pace = new Pace(array.length * options.profiles.length);
+      pace = new Pace(array.length);
     }
 
     async.forEachLimit(files, 1, function (item, next){
