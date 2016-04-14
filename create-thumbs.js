@@ -40,6 +40,8 @@ function log(){
 
 }
 
+console.log(argv)
+
 sharpCache.files  = setDefaultInt(argv['cache-files']  , 10);
 sharpCache.memory = setDefaultInt(argv['cache-memory'] , 200);
 sharpCache.items  = setDefaultInt(argv['cache-items']  , 100);
@@ -161,7 +163,7 @@ function filesExist(array, profiles, callback){
   var pace = dummypace;
 
   if (!argv.verbose){
-    pace = Pace(array.length * profiles.length);
+     pace = Pace(array.length * profiles.length);
   }
 
   async.forEachLimit(array, 2, function (item, next){
@@ -169,12 +171,12 @@ function filesExist(array, profiles, callback){
     var obj = converter._createTemplateObject(parsed.name);
     async.forEachLimit(profiles, 2, function (profile, _next){
       obj.filetype    = profile.filetype;
-      obj.profilename =profile.name;
-      var dst = converter._formatString(profile.dst, obj);
+      obj.profilename = profile.name;
 
+      var dst = converter._formatString(profile.dst, obj);
       fs.stat(dst, function (err, stats){
         if (err){
-          log(dst, 'does not exist! not found count:', nonExisting.length);
+          log('ERROR', dst, 'does not exist! not found count:', nonExisting.length);
           nonExisting.push(item);
         }
         pace.op();
@@ -190,7 +192,9 @@ function filesExist(array, profiles, callback){
 }
 
 function convertImages(array){
+
   if (!force) console.log('Checking if thumbnails already exists', array.length * options.profiles.length);
+
 
   filesExist(array, options.profiles, function (err, files){
 
@@ -198,7 +202,7 @@ function convertImages(array){
     var pace = dummypace;
 
     if (!argv.verbose){
-      pace = Pace(array.length * profiles.length);
+      pace = Pace(array.length * options.profiles.length);
     }
 
     async.forEachLimit(files, 1, function (item, next){
@@ -215,7 +219,7 @@ function convertImages(array){
         converter.start(item.path, buffer, options, function (err, status){
           if (err) console.log('ERROR CONVERTING', err);
 
-          if (!err) log('INFO', item.path, status.thumb);
+          if (!err) log('INFO', item.path);
 
           next();
           pace.op();
