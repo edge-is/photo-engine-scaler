@@ -204,7 +204,7 @@ function filesExist(array, profiles, callback){
   var pace = dummypace;
   //
   if (!argv.verbose){
-     pace = new Pace(array.length * profiles.length );
+     pace = new Pace(array.length );
   }
 
   async.forEachLimit(array, 2, function (item, next){
