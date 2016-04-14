@@ -164,7 +164,7 @@ function filesExist(array, profiles, callback){
   var pace = dummypace;
 
   if (!argv.verbose){
-     pace = Pace(array.length * profiles.length);
+     pace = new Pace(array.length * profiles.length);
   }
 
   async.forEachLimit(array, 2, function (item, next){
@@ -204,7 +204,7 @@ function convertImages(array){
     var pace = dummypace;
 
     if (!argv.verbose){
-      pace = Pace(array.length * options.profiles.length);
+      pace = new Pace(array.length * options.profiles.length);
     }
 
     async.forEachLimit(files, 1, function (item, next){
