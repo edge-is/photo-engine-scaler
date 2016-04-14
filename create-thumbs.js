@@ -215,7 +215,7 @@ function convertImages(array){
         converter.start(item.path, buffer, options, function (err, status){
           if (err) console.log('ERROR CONVERTING', err);
 
-          if (!err) log('INFO', item.path);
+          if (!err) log('INFO', item.path, status.thumb);
 
           next();
           pace.op();
