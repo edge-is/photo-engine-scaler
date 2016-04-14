@@ -28,6 +28,18 @@ var force = argv.force || false;
 
 var sharpCache = {};
 
+function log(){
+  if (!argv.verbose) return;
+
+  var arg = [];
+
+  for (var key in arguments){
+    arg.push(arguments[key]);
+  }
+  console.log.apply(this, arg);
+
+}
+
 sharpCache.files  = setDefaultInt(argv['cache-files']  , 10);
 sharpCache.memory = setDefaultInt(argv['cache-memory'] , 200);
 sharpCache.items  = setDefaultInt(argv['cache-items']  , 100);
@@ -135,13 +147,23 @@ function isImage(extension){
   return false;
 }
 
+var dummypace = {
+  op  : function (){}
+};
+
 function filesExist(array, profiles, callback){
   if (force){
     return callback(null, array);
   }
 
   var nonExisting = [];
-  var pace = new Pace(array.length * profiles.length);
+
+  var pace = dummypace;
+
+  if (!argv.verbose){
+    pace = Pace(array.length * profiles.length);
+  }
+
   async.forEachLimit(array, 2, function (item, next){
     var parsed = path.parse(item.path);
     var obj = converter._createTemplateObject(parsed.name);
@@ -149,8 +171,10 @@ function filesExist(array, profiles, callback){
       obj.filetype    = profile.filetype;
       obj.profilename =profile.name;
       var dst = converter._formatString(profile.dst, obj);
+
       fs.stat(dst, function (err, stats){
         if (err){
+          log(dst, 'does not exist! not found count:', nonExisting.length);
           nonExisting.push(item);
         }
         pace.op();
@@ -171,7 +195,12 @@ function convertImages(array){
   filesExist(array, options.profiles, function (err, files){
 
     console.log('Starting convert:', files.length);
-    var pace = new Pace(array.length);
+    var pace = dummypace;
+
+    if (!argv.verbose){
+      pace = Pace(array.length * profiles.length);
+    }
+
     async.forEachLimit(files, 1, function (item, next){
       var filePath = path.relative('.', item.path);
       var parsedFile = path.parse(item.path);
@@ -184,6 +213,10 @@ function convertImages(array){
 
       fs.readFile(item.path, function (err, buffer){
         converter.start(item.path, buffer, options, function (err, status){
+          if (err) console.log('ERROR CONVERTING', err);
+
+          if (!err) log('INFO', item.path);
+
           next();
           pace.op();
         });

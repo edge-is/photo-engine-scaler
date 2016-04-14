@@ -17,6 +17,7 @@ slug.defaults.modes['pretty'] = {
     multicharmap: slug.multicharmap
 };
 
+
 var converter = require('./lib/img-converter.js');
 
 var config = require('./config.js');
@@ -34,6 +35,8 @@ var errorFile = ['./logs/convert-error-', now, '.log'].join('');
 if (!logfile){
   return console.error('No log file specified use -l /path/to/file');
 }
+
+
 
 ConvertFiles({log : logfile});
 
