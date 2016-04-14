@@ -172,7 +172,7 @@ function deDupeArray(array, callback){
 
   async.forEachLimit(array, 2, function (item, next){
 
-    var key = md5(item.path);
+    var key = item.path;
 
     if (key in cache) {
       //pace.op();
