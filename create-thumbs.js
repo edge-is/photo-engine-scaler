@@ -202,7 +202,7 @@ function filesExist(array, profiles, callback){
   var pace = dummypace;
   //
   if (!argv.verbose){
-     pace = Pace(array.length * profiles.length);
+     pace = new Pace(array.length * profiles.length);
   }
 
 
@@ -236,7 +236,7 @@ function filesExist(array, profiles, callback){
           cache[cacheKey] = true;
           nonExisting.push(item);
         }
-        
+
         _next();
 
       });
@@ -261,7 +261,7 @@ function convertImages(array){
     var pace = dummypace;
 
     if (!argv.verbose){
-      pace = Pace(array.length);
+      pace = new Pace(files.length);
     }
 
     async.forEachLimit(files, 1, function (item, next){
