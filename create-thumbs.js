@@ -230,7 +230,7 @@ function filesExist(array, profiles, callback){
           if (cacheKey in cache){
             pace.op();
             return async.setImmediate(function () {
-                return next();
+                return _next();
             });
 
           }
