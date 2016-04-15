@@ -231,16 +231,16 @@ function filesExist(array, profiles, callback){
 
           if (cacheKey in cache){
             return async.setImmediate(function () {
+                pace.op();
                 return next();
             });
+
           }
 
           cache[cacheKey] = true;
           nonExisting.push(item);
         }else{
-          pace.op();
           _next();
-
         }
       });
 
@@ -248,12 +248,6 @@ function filesExist(array, profiles, callback){
 
   }, function (){
     callback(null, nonExisting);
-    // deDupeArray(nonExisting, function(err, files){
-    //   callback(null, files);
-    // });
-
-
-
   });
 
 }
@@ -266,7 +260,7 @@ function convertImages(array){
 
   filesExist(array, options.profiles, function (err, files){
 
-    console.log('Starting convert:', files.length);
+    console.log('\nStarting convert:', files.length);
     var pace = dummypace;
 
     if (!argv.verbose){
