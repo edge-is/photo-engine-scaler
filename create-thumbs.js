@@ -208,7 +208,6 @@ function filesExist(array, profiles, callback){
 
   var cache = {};
 
-
   async.forEachLimit(array, 2, function (item, next){
     var parsed = path.parse(item.path);
     var obj = converter._createTemplateObject(parsed.name);
@@ -223,23 +222,23 @@ function filesExist(array, profiles, callback){
 
       var dst = converter._formatString(profile.dst, obj);
       fs.stat(dst, function (err, stats){
+
+
+        pace.op();
         if (err){
           log('ERROR', dst, 'does not exist! not found count:', nonExisting.length);
-
-
           if (cacheKey in cache){
-            pace.op();
             return async.setImmediate(function () {
-                return _next();
+              return _next();
             });
-
           }
 
           cache[cacheKey] = true;
           nonExisting.push(item);
-        }else{
-          _next();
         }
+        
+        _next();
+
       });
 
     }, next);
