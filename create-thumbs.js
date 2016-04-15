@@ -41,8 +41,6 @@ function log(){
 
 }
 
-console.log(argv)
-
 sharpCache.files  = setDefaultInt(argv['cache-files']  , 10);
 sharpCache.memory = setDefaultInt(argv['cache-memory'] , 200);
 sharpCache.items  = setDefaultInt(argv['cache-items']  , 100);
@@ -204,7 +202,7 @@ function filesExist(array, profiles, callback){
   var pace = dummypace;
   //
   if (!argv.verbose){
-     pace = new Pace(array.length * profiles.length);
+     pace = Pace(array.length * profiles.length);
   }
 
 
@@ -230,8 +228,8 @@ function filesExist(array, profiles, callback){
 
 
           if (cacheKey in cache){
+            pace.op();
             return async.setImmediate(function () {
-                pace.op();
                 return next();
             });
 
@@ -264,7 +262,7 @@ function convertImages(array){
     var pace = dummypace;
 
     if (!argv.verbose){
-      pace = new Pace(array.length);
+      pace = Pace(array.length);
     }
 
     async.forEachLimit(files, 1, function (item, next){
