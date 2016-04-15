@@ -18,7 +18,7 @@ var now = new Date().toISOString().replace(/:/g, '_');
 
 var scanLogFile = ['logs/', 'converter-scan-', now, '.log'].join('');
 
-var Pace = require('pace');
+var Pace = require('awesome-progress');
 
 var scanDir = argv.s || false;
 
@@ -204,32 +204,53 @@ function filesExist(array, profiles, callback){
   var pace = dummypace;
   //
   if (!argv.verbose){
-     pace = new Pace(array.length );
+     pace = new Pace(array.length * profiles.length);
   }
+
+
+  var cache = {};
+
 
   async.forEachLimit(array, 2, function (item, next){
     var parsed = path.parse(item.path);
     var obj = converter._createTemplateObject(parsed.name);
+
+
+    var cacheKey = md5(item.path);
+
     async.forEachLimit(profiles, 2, function (profile, _next){
       obj.filetype    = profile.filetype;
       obj.profilename = profile.name;
+
 
       var dst = converter._formatString(profile.dst, obj);
       fs.stat(dst, function (err, stats){
         if (err){
           log('ERROR', dst, 'does not exist! not found count:', nonExisting.length);
+
+
+          if (cacheKey in cache){
+            return async.setImmediate(function () {
+                return next();
+            });
+          }
+
+          cache[cacheKey] = true;
           nonExisting.push(item);
+        }else{
+          pace.op();
+          _next();
+
         }
-        pace.op();
-        _next();
       });
 
     }, next);
 
   }, function (){
-    deDupeArray(nonExisting, function(err, files){
-      callback(null, files);
-    });
+    callback(null, nonExisting);
+    // deDupeArray(nonExisting, function(err, files){
+    //   callback(null, files);
+    // });
 
 
 
