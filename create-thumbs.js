@@ -15,8 +15,6 @@ var logfile = argv.l || argv.logfile || false;
 
 var force = argv.f || argv.force || false;
 
-
-
 var now = new Date().toISOString().replace(/:/g, '_');
 
 var scanLogFile = ['logs/', 'converter-scan-', now, '.log'].join('');
@@ -91,7 +89,7 @@ function ReadLogFileSync(filename){
 
   var content = fs.readFileSync(filename).toString('utf8');
 
-  return content.split('\n').map(jsonParse).filter(function (e){return e});
+  return content.split('\n').map(jsonParse).filter(function (e){ return e; });
 
 }
 
@@ -109,7 +107,7 @@ if (scanDir){
     console.log(`
       Scaning done
       Log file is : ${logfile}
-      Total files : ${total}
+      Total files : ${stats.files.length}
       `);
 
     convertImages(stats.files);
@@ -131,20 +129,30 @@ function convertImages(array){
 
   configOptions.sharpCache = sharpCache;
 
+  configOptions.force = force;
+
+
+  var noprogress = argv.noprogress || false;
+
   var total = array.length;
 
-  console.log(array.length, 'files..')
-  var pace = Pace(total);
+  var pace = {
+    op : function (){}
+  };
 
-  var i = 0;
+  if (!noprogress){
+    pace = Pace(total);
+  }
 
   thumbs.convert(array, configOptions, function image(err, res, next){
-
     pace.op();
+
+    if (argv.v) console.log(err, res);
+
     next();
 
-  }, function done(){
-    console.log('DONE');
+  }, function done(res){
+    console.log('DONE', res);
   })
 
 
