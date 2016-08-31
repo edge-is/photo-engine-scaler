@@ -71,6 +71,14 @@ function exists (filename){
 }
 
 
+function jsonParse (string){
+  try {
+    return JSON.parse(string);
+  } catch (e) {
+    return false;
+  }
+}
+
 function setDefaultInt(value, def){
   var int = parseInt(value);
 
