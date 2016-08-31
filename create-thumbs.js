@@ -1,49 +1,77 @@
-'use strict'
-var sharp = require('sharp');
 
-var async = require('async');
+var thumbs = require('./lib/thumbs.js');
+
+var Pace = require('awesome-progress');
+
 var fs = require('fs');
-var path = require('path');
-var tinytim = require('tinytim');
-var crypto = require('crypto');
-
-var mkdirp = require('mkdirp');
-var argv = require('yargs').argv;
 
 var fileScan = require('./lib/scan.js');
 
-var converter = require('./lib/converter.js');
+var argv = require('yargs').argv;
+
+var scanDir = argv.s || argv.scan || false;
+
+var logfile = argv.l || argv.logfile || false;
+
+var force = argv.f || argv.force || false;
+
+
 
 var now = new Date().toISOString().replace(/:/g, '_');
 
 var scanLogFile = ['logs/', 'converter-scan-', now, '.log'].join('');
 
-var Pace = require('awesome-progress');
-
-var scanDir = argv.s || false;
-
-var logfile = argv.f || false;
-
-var force = argv.force || false;
 
 var sharpCache = {};
-
-
-function log(){
-  if (!argv.verbose) return;
-
-  var arg = [];
-
-  for (var key in arguments){
-    arg.push(arguments[key]);
-  }
-  console.log.apply(this, arg);
-
-}
 
 sharpCache.files  = setDefaultInt(argv['cache-files']  , 10);
 sharpCache.memory = setDefaultInt(argv['cache-memory'] , 200);
 sharpCache.items  = setDefaultInt(argv['cache-items']  , 100);
+
+if (argv.h || argv.help){
+  return console.log(`
+    Usage program
+
+    -s --scan       Scans a directory
+    -l --logfile    Uses a log file
+    -f --force      Don't check if files exist
+    settings for Sharp: --cache-files, --cache-memory --cache-itesm
+  `);
+}
+
+
+
+var configOptions = false;
+if (argv.c){
+  configOptions = readConfig(argv.c);
+}else{
+  configOptions = require('./thumbs-config.js');
+}
+
+
+if (!configOptions){
+  return console.error('could not load config:', argv.c);
+}
+
+function readConfig(configFile){
+  var location = path.resolve(configFile);
+  try {
+    return require(location);
+  } catch (e) {
+    return false;
+  }
+}
+
+function exists (filename){
+
+  try {
+    fs.statSync(filename);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 
 function setDefaultInt(value, def){
   var int = parseInt(value);
@@ -54,55 +82,6 @@ function setDefaultInt(value, def){
   return int;
 }
 
-function md5(string){
-  return crypto.createHash('md5').update(string).digest("hex");
-}
-
-if (argv.h || argv.help){
-  return console.log([
-    'Usage program -s /dir/ || -f /logfile.log',
-    'settings for Sharp: --cache-files, --cache-memory --cache-itesm'
-  ].join('\n'));
-}
-
-sharp.cache(sharpCache);
-
-
-var options = false;
-if (argv.c){
-  options = readConfig(argv.c);
-}else{
-  options = require('./thumbs-config.js');
-}
-
-
-if (!options){
-  return console.error('could not load config:', argv.c);
-}
-function readConfig(configFile){
-  var location = path.resolve(configFile);
-  try {
-    return require(location);
-  } catch (e) {
-    return false;
-  }
-}
-
-function jsonParse (string){
-  try {
-    return JSON.parse(string);
-  } catch (e) {
-    return false;
-  }
-}
-function exists (filename){
-  try {
-    fs.statSync(filename);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
 function ReadLogFileSync(filename){
 
   if (!exists(filename)){
@@ -126,11 +105,12 @@ if (scanDir){
   fileScan(scanDir, logfile, function (err, stats){
 
     var total  = stats.folders.length + stats.files.length;
-    console.log([
-      '',
-      'All done, log file is: ' + logfile,
-      'Total files and folders ' + total
-    ].join('\n'));
+
+    console.log(`
+      Scaning done
+      Log file is : ${logfile}
+      Total files : ${total}
+      `);
 
     convertImages(stats.files);
 
@@ -142,154 +122,30 @@ if (scanDir){
     convertImages(array);
   }
 }
-function isImage(extension){
-  extension = extension.toLowerCase();
-  var extensions = ['.jpg', '.jpeg', '.png', '.tif', '.gif'];
-  if (extensions.indexOf(extension) >= 0){
-    return true;
-  }
-  return false;
-}
 
-var dummypace = {
-  op  : function (){}
-};
-
-function deDupeArray(array, callback){
-  var cache = {};
-
-  var files = [];
-
-  var pace = dummypace;
-
-  var len = array.length;
-  //
-  // if (!argv.verbose){
-  //    pace = new Pace(array.length);
-  // }
-
-  async.forEachLimit(array, 2, function (item, next){
-
-    var key = md5(item.path);
-
-    if (key in cache) {
-
-      return async.setImmediate(function () {
-          return next();
-      });
-    }
-
-    files.push(item);
-    cache[key] = true;
-
-    return next();
-
-  }, function (){
-
-    cache = false;
-    return callback(null, files);
-
-  });
-}
-
-function filesExist(array, profiles, callback){
-  if (force){
-    return callback(null, array);
-  }
-
-  var nonExisting = [];
-
-  var pace = dummypace;
-  //
-  if (!argv.verbose){
-     pace = new Pace(array.length * profiles.length);
-  }
-
-
-  var cache = {};
-
-  async.forEachLimit(array, 2, function (item, next){
-    var parsed = path.parse(item.path);
-    var obj = converter._createTemplateObject(parsed.name);
-
-
-    var cacheKey = md5(item.path);
-
-    async.forEachLimit(profiles, 2, function (profile, _next){
-      obj.filetype    = profile.filetype;
-      obj.profilename = profile.name;
-
-
-      var dst = converter._formatString(profile.dst, obj);
-      fs.stat(dst, function (err, stats){
-
-
-        pace.op();
-        if (err){
-          log('ERROR', dst, 'does not exist! not found count:', nonExisting.length);
-          if (cacheKey in cache){
-            return async.setImmediate(function () {
-              return _next();
-            });
-          }
-
-          cache[cacheKey] = true;
-          nonExisting.push(item);
-        }
-
-        _next();
-
-      });
-
-    }, next);
-
-  }, function (){
-    callback(null, nonExisting);
-  });
-
-}
 
 function convertImages(array){
 
-  if (!force) console.log('Checking if thumbnails already exists', array.length * options.profiles.length);
 
-  options.force = force;
+  configOptions.limit = 1;
 
-  filesExist(array, options.profiles, function (err, files){
+  configOptions.sharpCache = sharpCache;
 
-    console.log('\nStarting convert:', files.length);
-    var pace = dummypace;
+  var total = array.length;
 
-    if (!argv.verbose){
-      pace = new Pace(files.length);
-    }
+  console.log(array.length, 'files..')
+  var pace = Pace(total);
 
-    async.forEachLimit(files, 1, function (item, next){
-      var filePath = path.relative('.', item.path);
-      var parsedFile = path.parse(item.path);
+  var i = 0;
 
-      if (!isImage(parsedFile.ext)){
-        // console.log('Not an image', item.path);
-        pace.op();
-        return next();
-      }
+  thumbs.convert(array, configOptions, function image(err, res, next){
 
-      fs.readFile(item.path, function (err, buffer){
-        converter.start(item.path, buffer, options, function (err, status){
-          if (err) console.log('ERROR CONVERTING', err);
+    pace.op();
+    next();
 
-          if (!err) log('INFO', item.path);
-
-          next();
-          pace.op();
-        });
-      });
-    });
-  });
-
-
+  }, function done(){
+    console.log('DONE');
+  })
 
 
 }
-//
-//
