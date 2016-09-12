@@ -211,6 +211,12 @@ function convertImages(array){
 
       var parsed = path.parse(destination);
 
+
+      parsed.ext = '.jpg';
+
+      destinationLocation = parsed.dir + path.sep + parsed.name + parsed.ext;
+
+
       var dir = parsed.dir;
 
       var dirHash = _utils.md5(dir);
@@ -237,7 +243,7 @@ function convertImages(array){
       sharp(inputFile)
         .resize(size.height, size.width)
         .max()
-        .toFile(destination, function (err, converted){
+        .toFile(destinationLocation, function (err, converted){
           if (err) console.log(err);
 
           pace.op();
