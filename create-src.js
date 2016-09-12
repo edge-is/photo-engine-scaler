@@ -25,8 +25,13 @@ var now = new Date().toISOString().replace(/:/g, '_');
 
 var scanLogFile = `logs/converter-source-scan-${now}.log`;
 
+var workLogFileName = `logs/converter-source-worklog-${now}.log`;
+
 var logfile = argv.l || argv.logfile || scanLogFile;
 
+var limit = (isNaN(parseInt(argv.limit))) ? 4 : parseInt(argv.limit);
+
+var workLogFile = argv.w || workLogFileName;
 
 var maxHeight = argv.height || false;
 
@@ -62,6 +67,8 @@ if (argv.h || argv.help){
     --width         Max width of image
     --dry           Dry run, no images will be hurt..
     --del           delete logfile on exit
+    --limit         How many images to convert at a time
+    -w              worklog
     settings for Sharp: --cachefiles, --cachememory --cacheitems
   `);
 }
@@ -93,17 +100,26 @@ function start(){
         Log file is : ${logfile}
         Total files : ${stats.files.length}
         `);
-
       _utils.compareFiles(stats.files, source, dest, function (err, res){
         if (err) return console.log(err);
+        _utils.filterImages(res.files, function (filteredImages){
+          console.log(`
+            Files to update or created ${res.files.length}
+            Images to update or created ${filteredImages.length}
+            `);
+          if (dry) return console.log('Dry run, exiting');
 
+          _utils.logArray(filteredImages, workLogFile, function logDone(err){
+            if (err) return console.log(`Error writing logfile ${workLogFile}`);
 
-        if (dry) return console.log(`
-          Dry run
-          Files to changed or created ${res.files.length}
-          `);
+            console.log(`Wrote logfile ${workLogFile}`);
 
-        convertImages(res.files);
+            convertImages(filteredImages);
+
+          });
+
+        });
+
       });
 
       //
@@ -134,6 +150,8 @@ if (argv.service){
 
   var seconds = duration(interval);
   logfile = `./logs/.service-${now}.log`;
+
+  workLogFileName = `./logs/.service-worklog-${now}.log`;
   console.log(`
     starting service
       options are:
@@ -145,7 +163,7 @@ if (argv.service){
         logfile       : ${logfile}
     `);
 
-  noprogress=true;
+  noprogress = true;
 
   deleteLogFileonSuccess = true;
 
@@ -159,7 +177,10 @@ if (argv.service){
 }
 
 
-
+function setDestination(_dst, _src){
+  var rel = path.relative(source, _src)
+  return path.join(_dst, rel);
+}
 
 function convertImages(array){
 
@@ -195,66 +216,47 @@ function convertImages(array){
 
   };
 
-
-
-  async.eachOfLimit(array, 4, function (item, key, next){
+  async.eachOfLimit(array, limit, function (item, key, next){
 
 
       var inputFile = item.path;
-
-      var location = inputFile.split(source);
-
-      location = location.pop();
-
-
-      var destination = path.join(dest, location);
-
-      var parsed = path.parse(destination);
-
-
-      parsed.ext = '.jpg';
-
-      destinationLocation = parsed.dir + path.sep + parsed.name + parsed.ext;
-
-
-      var dir = parsed.dir;
-
-      var dirHash = _utils.md5(dir);
-
-
-      if (!dirCache[dirHash]){
-        var dirExists = _utils.exists(dir);
-
-        if (!dirExists){
-          mkdirp(dir);
-        }
-
-        dirCache[dirHash] = true;
-      }
-
-      _utils.exists(parsed.dir);
-
 
       var size = {
         height : maxHeight,
         width : maxWidth
       };
 
-      sharp(inputFile)
-        .resize(size.height, size.width)
-        .max()
-        .toFile(destinationLocation, function (err, converted){
-          if (err) console.log(err);
+      var destinationFile = setDestination(dest, item.path);
 
-          pace.op();
-          next();
+      var destDir = path.parse(destinationFile).dir;
+      if (!_utils.exists(destDir)){
+        mkdirp(destDir);
+      }
 
+      fs.readFile(inputFile, function (err, buffer){
+        sharp(buffer)
+          .resize(size.height, size.width)
+          .max()
+          .toBuffer(function (err, outputBuffer){
+            if (err) console.log(inputFile, destinationFile, err);
+            fs.writeFile(destinationFile, outputBuffer, function doneImageResize(err, res){
+              if (err) console.log(inputFile, destinationFile, err);
+              pace.op();
+              next();
+            });
         });
-
-  }, function done(){
-    console.log('All Done', array.length);
+      });
+  }, function done(err){
+    console.log('All Done', array.length, err);
 
     resizeRunning = false;
+
+    if (deleteLogFileonSuccess){
+      fs.unlinkSync(logfile);
+      fs.unlinkSync(workLogFileName);
+    }
+
+
   });
 
 
