@@ -153,6 +153,10 @@ function convertImages(array){
   }
 
   thumbs.convert(array, configOptions, function image(err, res, next){
+
+
+    pace.total = res.totalFiles;
+
     pace.op();
 
     if (argv.v) console.log(err, res);
