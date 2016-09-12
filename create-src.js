@@ -237,6 +237,7 @@ function convertImages(array){
         sharp(buffer)
           .resize(size.height, size.width)
           .max()
+          .jpeg()
           .toBuffer(function (err, outputBuffer){
             if (err) console.log(inputFile, destinationFile, err);
             fs.writeFile(destinationFile, outputBuffer, function doneImageResize(err, res){
