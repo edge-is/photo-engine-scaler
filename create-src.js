@@ -34,7 +34,7 @@ var maxWidth = argv.width || false;
 
 var noprogress = argv.noprogress || false;
 
-var deleteLogFileonSuccess = argv.d || false;
+var deleteLogFileonSuccess = argv.del || false;
 
 var sharp = require('sharp');
 var mkdirp = require('mkdirp');
@@ -61,6 +61,7 @@ if (argv.h || argv.help){
     --height        Max height of image
     --width         Max width of image
     --dry           Dry run, no images will be hurt..
+    --del           delete logfile on exit
     settings for Sharp: --cachefiles, --cachememory --cacheitems
   `);
 }
