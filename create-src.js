@@ -216,6 +216,8 @@ function convertImages(array){
 
   };
 
+  var errors = [];
+
   async.eachOfLimit(array, limit, function (item, key, next){
 
 
@@ -239,16 +241,34 @@ function convertImages(array){
           .max()
           .jpeg()
           .toBuffer(function (err, outputBuffer){
-            if (err) console.log(inputFile, destinationFile, err);
+            if (err) {
+
+              if (argv.v) console.log(inputFile, destinationFile, err);
+
+              errors.push({
+                src : inputFile,
+                dst : destinationFile,
+                err : err
+              })
+
+            }
             fs.writeFile(destinationFile, outputBuffer, function doneImageResize(err, res){
-              if (err) console.log(inputFile, destinationFile, err);
+              if (argv.v) console.log(inputFile, destinationFile, err);
+
+              errors.push({
+                src : inputFile,
+                dst : destinationFile,
+                err : err
+              })
+
               pace.op();
               next();
             });
         });
       });
   }, function done(err){
-    console.log('All Done', array.length, err);
+
+
 
     resizeRunning = false;
 
@@ -256,6 +276,14 @@ function convertImages(array){
       fs.unlinkSync(logfile);
       fs.unlinkSync(workLogFileName);
     }
+
+    var imagesDone = (array.length - errors.length);
+
+    console.log(`
+      ${array.length} images processed
+      ${errors.length} errors
+      ${imagesDone} successful
+    `);
 
 
   });
