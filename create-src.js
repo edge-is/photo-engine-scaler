@@ -93,7 +93,7 @@ function start(){
 
   if (argv.l || argv.logfile){
 
-    filteredImages = _utils.readlogfile(logfile).splice(20,20);
+    filteredImages = _utils.readlogfile(logfile);
 
     return convertImages(filteredImages);
   }
