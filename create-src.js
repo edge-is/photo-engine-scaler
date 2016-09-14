@@ -90,6 +90,15 @@ var configOptions = {};
 
 function start(){
 
+  if (argv.l || argv.logfile){
+    console.log(`Using ${logfile}`);
+
+    filteredImages = _utils.readlogfile(logfile);
+
+
+    return convertImages(filteredImages);
+  }
+
   if (!source) return console.log('No source..');
 
   fileScan(source, logfile, function (err, stats){
