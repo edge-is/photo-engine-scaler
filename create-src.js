@@ -89,17 +89,15 @@ function setDefaultInt(value, def){
 var configOptions = {};
 
 function start(){
+  if (!source) return console.log('No source..');
 
   if (argv.l || argv.logfile){
-    console.log(`Using ${logfile}`);
 
-    filteredImages = _utils.readlogfile(logfile);
-
+    filteredImages = _utils.readlogfile(logfile).splice(20,20);
 
     return convertImages(filteredImages);
   }
 
-  if (!source) return console.log('No source..');
 
   fileScan(source, logfile, function (err, stats){
 
@@ -228,8 +226,6 @@ function convertImages(array){
   var errors = [];
 
   async.eachOfLimit(array, limit, function (item, key, next){
-
-
       var inputFile = item.path;
 
       var size = {
