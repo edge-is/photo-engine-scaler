@@ -240,37 +240,60 @@ function convertImages(array){
         mkdirp(destDir);
       }
 
-      fs.readFile(inputFile, function (err, buffer){
-        sharp(buffer)
-          .resize(size.height, size.width)
-          .max()
-          .jpeg()
-          .toBuffer(function (err, outputBuffer){
-            if (err) {
+      if (process.platform === 'win32'){
+        inputFile = path.relative('.', inputFile);
+        destinationFile = path.relative('.', destinationFile);
 
-              if (argv.v) console.log(inputFile, destinationFile, err);
-
-              errors.push({
-                src : inputFile,
-                dst : destinationFile,
-                err : err
-              })
-
-            }
-            fs.writeFile(destinationFile, outputBuffer, function doneImageResize(err, res){
-              if (argv.v) console.log(inputFile, destinationFile, err);
-
-              errors.push({
-                src : inputFile,
-                dst : destinationFile,
-                err : err
-              })
-
-              pace.op();
-              next();
+      }
+      sharp(inputFile)
+        .resize(size.height, size.width)
+        .max()
+        .jpeg()
+        .toFile(destinationFile, function savingImage(err){
+          if (err) {
+            if (argv.v) console.log(inputFile, destinationFile, err);
+            errors.push({
+              src : inputFile,
+              dst : destinationFile,
+              err : err
             });
+          }
+          pace.op();
+          next();
+
         });
-      });
+
+      // fs.readFile(inputFile, function (err, buffer){
+      //   sharp(buffer)
+      //     .resize(size.height, size.width)
+      //     .max()
+      //     .jpeg()
+      //     .toBuffer(function (err, outputBuffer){
+      //       if (err) {
+      //
+      //         if (argv.v) console.log(inputFile, destinationFile, err);
+      //
+      //         errors.push({
+      //           src : inputFile,
+      //           dst : destinationFile,
+      //           err : err
+      //         })
+      //
+      //       }
+      //       fs.writeFile(destinationFile, outputBuffer, function doneImageResize(err, res){
+      //         if (argv.v) console.log(inputFile, destinationFile, err);
+      //
+      //         errors.push({
+      //           src : inputFile,
+      //           dst : destinationFile,
+      //           err : err
+      //         })
+      //
+      //         pace.op();
+      //         next();
+      //       });
+      //   });
+      // });
   }, function done(err){
 
 
