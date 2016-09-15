@@ -214,6 +214,10 @@ function convertImages(array){
 
   }
 
+  if (argv.tail){
+    console.log('Logging to process.log');
+  }
+
   var pace = {
     op : function (){}
   };
@@ -271,6 +275,16 @@ function convertImages(array){
               err : err
             });
           }
+
+          if (argv.tail){
+            _utils.logToDisk('process.log', {
+              src : inputFile,
+              dst : destinationFile,
+              err : err
+            });
+          }
+
+
           pace.op();
           next();
 
