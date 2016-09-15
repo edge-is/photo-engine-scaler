@@ -74,7 +74,7 @@ if (argv.h || argv.help){
 }
 
 if (!maxHeight || !maxWidth){
-  return console.log('Arguments not valid')
+  return console.log('Height and width not set')
 }
 
 
@@ -144,6 +144,10 @@ function testTime(time){
   }
 }
 
+function reJoinPath(obj){
+
+  return [obj.dir, path.sep, obj.name, obj.ext ].join('');
+}
 
 var resizeRunning = false;
 
@@ -245,6 +249,15 @@ function convertImages(array){
         destinationFile = path.relative('.', destinationFile);
 
       }
+
+      // convert to jpeg
+
+      var fileObject = path.parse(destinationFile);
+
+      fileObject.ext = '.jpg';
+
+      destinationFile = reJoinPath(fileObject);
+
       sharp(inputFile)
         .resize(size.height, size.width)
         .max()
